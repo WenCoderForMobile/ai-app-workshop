@@ -1,0 +1,29 @@
+{
+  "formatVersion": "1.0",
+  "programId": "drink-water",
+  "title": "喝水打卡",
+  "summary": "点按钮给今日杯数 +1，数据保存在本地。",
+  "revision": 1,
+  "runtime": { "name": "runtime-v1", "uiRegistryVersion": "1.0" },
+  "capabilities": [],
+  "state": {
+    "count": { "type": "int64", "value": 0, "persistence": "local" }
+  },
+  "screens": [
+    {
+      "id": "main",
+      "root": {
+        "type": "Column",
+        "children": [
+          { "type": "Text", "text": "喝水打卡", "bold": true },
+          { "type": "Text", "text": "今日已喝 {count} 杯" },
+          {
+            "type": "Button",
+            "text": "喝一杯",
+            "onClick": [{ "action": "setState", "key": "count", "op": "inc" }]
+          }
+        ]
+      }
+    }
+  ]
+}

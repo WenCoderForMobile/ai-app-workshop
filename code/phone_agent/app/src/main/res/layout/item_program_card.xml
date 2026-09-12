@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.autoprocedure.plat.SquareFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    android:background="@drawable/bg_program_card"
+    android:padding="12dp">
+
+    <TextView
+        android:id="@+id/program_delete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:paddingStart="8dp"
+        android:paddingTop="0dp"
+        android:paddingEnd="2dp"
+        android:paddingBottom="8dp"
+        android:text="@string/action_delete"
+        android:textColor="#FFC62828"
+        android:textSize="12sp" />
+
+    <LinearLayout
+        android:id="@+id/program_body"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/program_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="📦"
+            android:textSize="36sp" />
+
+        <TextView
+            android:id="@+id/program_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:maxLines="1"
+            android:paddingTop="8dp"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/program_summary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:maxLines="2"
+            android:paddingTop="4dp"
+            android:textColor="@color/purple_700"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/program_state"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:paddingTop="8dp"
+            android:textSize="12sp" />
+    </LinearLayout>
+</com.autoprocedure.plat.SquareFrameLayout>

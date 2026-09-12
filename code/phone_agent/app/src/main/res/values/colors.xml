@@ -1,0 +1,22 @@
+<resources>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="bg_page">#FFF5F5F5</color>
+    <color name="bg_user">#FFD1E8FF</color>
+    <color name="bg_system">#FFFFFFFF</color>
+    <color name="recording">#FFD32F2F</color>
+    <color name="ic_launcher_background">#FF1E1D61</color>
+    <color name="text_secondary">#FF5F6368</color>
+    <color name="divider">#FFE6E6E6</color>
+    <color name="chip_ok">#FF1B8A4A</color>
+    <color name="chip_ok_bg">#FFE8F6EE</color>
+    <color name="chip_busy">#FFB26A00</color>
+    <color name="chip_busy_bg">#FFFFF4E0</color>
+    <color name="chip_err">#FFB3261E</color>
+    <color name="chip_err_bg">#FFFCE8E6</color>
+    <color name="chip_idle">#FF5F6368</color>
+    <color name="chip_idle_bg">#FFEEEFF1</color>
+</resources>

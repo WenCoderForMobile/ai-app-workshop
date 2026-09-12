@@ -1,0 +1,11 @@
+/.gradle/
+/build/
+/app/build/
+/connect/build/
+/local.properties
+/.idea/
+*.iml
+.DS_Store
+*.apk
+*.onnx
+*.so

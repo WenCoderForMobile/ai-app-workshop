@@ -1,0 +1,18 @@
+本目录启动 procedure_2 的本机 Agent。开发 CLI 使用 Codex。
+
+启动：
+  codex login
+  cd code/startServer
+  ./start-adb-server.sh
+
+脚本加载未入库的 env.sh，执行 codex login status，再建立 17890/17891 的 adb reverse。
+已设置 CODEX_API_KEY 时，codex exec 使用该环境变量；否则复用 Codex 已有登录。
+不要把密钥直接写入脚本或文档。
+
+AUTO_PROCEDURE_USE_CODEX_CLI 默认 1；设为 0 时，APK 开发改用已有 LLM 配置。
+CODEX_CLI 可指定 Codex 可执行文件路径，不接受附加参数。
+AUTO_PROCEDURE_RUNTIME 默认为 apk，可设 declarative 保留声明式模式。
+声明式模式默认直接调用 Codex CLI；其确定性模板仅作为既有故障降级。
+
+17890 是最多 64 KiB 的 NDJSON 控制通道；17891 提供已注册的 APK/.apkg 制品。
+手机不直连模型。当前仅用于 Debug/ADB 开发联调。

@@ -1,0 +1,18 @@
+程序 Agent：默认 APK 插件模式
+
+启动：python3 code/agent/main.py --runtime apk
+声明式兼容：python3 code/agent/main.py --runtime declarative
+ADB 联调：cd code/startServer && ./start-adb-server.sh
+
+APK：apk_product_manager → orchestrator → program_agent → apk_delivery。
+需求确认后生成 PluginEntry APK，控制通道发送任务描述，17891 提供已注册制品。
+手机核对大小和 SHA-256，保存为只读文件，程序广场点击后在宿主进程内加载。
+支持生成本地小游戏；没有开发模型时明确报错，不用计数器替代游戏。
+历史产品和源码：code/agent/out/tasks；APK 对话索引：out/apk_intents；任务状态：out/apk_jobs.json。
+
+使用 Codex CLI：AUTO_PROCEDURE_USE_CODEX_CLI=1，命令为 codex exec。
+否则使用现有 llm/config.json 指定的模型，密钥从环境变量提供。
+Android 编译需要 JDK 17、Android SDK 和项目 Gradle 依赖。
+APK 通道当前仅用于 Debug 内部开发；生产签名验证尚待实现。
+
+完整变更、测试方式、优化优先级：data/08-procedure-alignment-and-optimizations.md。

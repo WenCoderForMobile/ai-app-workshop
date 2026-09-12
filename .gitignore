@@ -1,0 +1,67 @@
+# 本机密钥，不要入库
+codex/startServer/env.sh
+codex/startServer/export
+code/startServer/env.sh
+code/startServer/export
+.env
+.env.*
+!.env.example
+!.env.sample
+
+# 系统 / IDE / 编辑器本地
+.DS_Store
+**/.DS_Store
+.idea/
+*.iml
+*.swp
+.vscode/
+.cursor/
+
+# Android / Gradle 构建产物
+.gradle/
+**/.gradle/
+**/build/
+**/.cxx/
+**/captures/
+local.properties
+*.apk
+*.aar
+*.ap_
+*.dex
+*.apkg
+*.keystore
+*.jks
+
+# Python
+__pycache__/
+.venv/
+.pytest_cache/
+.mypy_cache/
+*.pyc
+
+# 第三方源码与交叉编译产物（参考用，不入库）
+sherpa-onnx/
+
+# 语音模型与 JNI（体积大，本机按文档自行放置）
+*.onnx
+*.so
+*.tar.bz2
+code/phone_agent/app/src/main/assets/sherpa-onnx-paraformer-zh-2023-09-14/
+code/phone_agent/app/src/main/jniLibs/
+
+# Agent 运行产物：任务归档、编译工程、制品、探测结果
+code/agent/out/
+code/phone_agent/data/plugins/*
+!code/phone_agent/data/plugins/.gitkeep
+
+# 本机日志与下载碎片
+*.log
+*.part
+
+# 汇报稿、实机截图（非源码）
+方案汇报.html
+code/phone_agent/design/verification/
+
+# 空目录 / 本机杂项
+/voice/
+测试功能

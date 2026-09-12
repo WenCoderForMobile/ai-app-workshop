@@ -1,0 +1,25 @@
+# 构建产物：不要索引、不要检索
+**/.gradle/
+**/build/
+**/.cxx/
+**/captures/
+**/.idea/
+**/*.iml
+local.properties
+*.apk
+*.aar
+*.dex
+
+# 大二进制：模型与 JNI
+*.onnx
+*.so
+*.tar.bz2
+
+# 第三方 sherpa-onnx 整库（官方参考，本仓库只用到 code/voice 已拷贝的 Kotlin 绑定）
+sherpa-onnx/
+
+# 系统杂项
+.DS_Store
+**/.DS_Store
+__pycache__/
+.venv/

@@ -1,0 +1,26 @@
+{
+  "active": "deepseek",
+  "providers": {
+    "local": {
+      "label": "本机 Ollama",
+      "base_url": "http://127.0.0.1:11434/v1",
+      "api_key": "ollama",
+      "model": "auto",
+      "timeout_seconds": 180
+    },
+    "deepseek": {
+      "label": "DeepSeek",
+      "base_url": "https://api.deepseek.com/v1",
+      "api_key": "${DEEPSEEK_API_KEY}",
+      "model": "deepseek-chat",
+      "timeout_seconds": 60
+    },
+    "chatgpt": {
+      "label": "ChatGPT (OpenAI)",
+      "base_url": "https://api.openai.com/v1",
+      "api_key": "${OPENAI_API_KEY}",
+      "model": "gpt-4o-mini",
+      "timeout_seconds": 60
+    }
+  }
+}

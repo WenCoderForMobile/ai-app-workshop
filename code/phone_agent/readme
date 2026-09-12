@@ -1,0 +1,67 @@
+参照程序 SherpaOnnxVadAsr，实现一个 Android App。
+
+程序有两个界面：
+界面1:对话框，可以手动输入，也可以语音输入；如果语音时，点击按钮开始输入，并显示语音输入的文字；
+输入的问题，发送到服务器；（该功能后续实现）
+点击按钮，开始语音输入；再点击，结束输入，开始转为文字；
+
+## 当前实现
+
+工程目录：`code/phone_agent/`
+
+| 界面 | Activity | 说明 |
+|------|----------|------|
+| 界面1 对话框 | `ChatActivity`（启动页） | 文字输入、语音按钮、发送 |
+| 界面2 功能列表 | `FeatureListActivity` | 已验证并激活的声明式插件列表 |
+
+语音走 **按住式非流式 ASR**（点开始录音，再点结束再转写），不使用 VAD。
+
+- JNI：`app/src/main/jniLibs/arm64-v8a/`
+- 模型：`assets/sherpa-onnx-paraformer-zh-2023-09-14/`（`asrModelType = 0`）
+- 仅 arm64 真机
+
+## connect 模块（第一期：ADB 模拟）
+
+`app` 只依赖 `connect` 的接口。连接和收发分开：
+
+| 职责 | 代码 | 说明 |
+|------|------|------|
+| 连接服务器 | `connection.ServerConnection` / `TcpServerConnection` | 只负责连上 / 断开 `127.0.0.1:17890` |
+| ADB 地址 | `connection.AdbEndpoint` | 手机连本机端口，由 `adb reverse` 转到电脑 |
+| 发送 / 接收 | `message.MessageClient` / `LineMessageClient` | 不负责建连；必须先 `attach` 到已连接的 `ServerConnection` |
+
+控制报文：一行一条 UTF-8 JSON，外层为 `{"type":"...","text":"..."}`，每帧
+最多 64 KiB。`chat` 承载对话，`job` 的 `text` 承载任务状态/制品描述符，
+`artifact_report` 回传手机侧下载、校验和安装结果。
+
+### 电脑上启动模拟服务器
+
+```bash
+cd code/startServer
+chmod +x start-adb-server.sh
+./start-adb-server.sh
+```
+
+脚本会映射 `17890` 控制面和 `17891` 制品面，再启动 `agent` 产品 Agent。服务端在
+控制连接断开后继续监听，手机重连时会收到最近任务状态。
+
+### 手机上
+
+1. 菜单「连接服务器」
+2. 对话框里发送想要的功能
+3. Agent 澄清或给出方案；回复「确认」后保存确认意图、调用 Codex CLI 生成声明式
+   候选并确定性编译为 `.apkg`。
+4. 手机收到 `SUCCEEDED` 描述符后，从 17891 流式下载到 `.part`，边下载边限制大小并
+   校验传输 SHA-256；随后在后台完成 Manifest/文件表/smoke 校验和原子激活。
+5. 安装结果通过 `artifact_report` 回传；通过后可在程序广场由固定 Runtime 解释加载。
+
+电脑侧 `data/plugins/` 只是制品镜像，不是 Android 执行目录。旧 Base64 插件帧仅为
+开发期升级兼容保留，新链路不会把整个 `.apkg` 放进控制消息。
+
+未连接就发送时，对话里提示失败，不假装已经发到服务器。
+
+### 操作
+
+1. Android Studio 打开本目录，连 arm64 真机 Run
+2. 或：`./gradlew :connect:testDebugUnitTest :app:assembleDebug`
+3. 电脑先跑 `code/startServer/start-adb-server.sh`，再在 App 里点连接

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Make installed TTS services visible to the host and its in-process plugins. -->
+    <queries>
+        <intent><action android:name="android.intent.action.TTS_SERVICE" /></intent>
+    </queries>
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_factory_app"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_factory_app_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.SelfProcedurePlat">
+
+        <activity
+            android:name=".MainActivity"
+            android:theme="@style/Theme.FactoryHome"
+            android:icon="@mipmap/ic_factory_launcher"
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".ChatActivity" android:exported="false"
+            android:theme="@style/Theme.FactoryHome" android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".PluginContainerActivity" android:exported="false" />
+        <activity android:name=".FeatureListActivity" />
+        <activity android:name=".PluginActivity" />
+        <activity android:name=".ApkPluginActivity" />
+
+    </application>
+</manifest>
