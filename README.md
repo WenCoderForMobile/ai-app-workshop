@@ -2,11 +2,9 @@
 
 **中文** | [English](README.en.md)
 
-用自然语言（文字或语音）描述想要的功能，电脑侧 Agent 判断能否做、给出方案，用户确认后再生成个人程序，下发到手机宿主里当插件运行。
+用户以文字或语音说明所需功能。计算机端 Agent 评估可行性并给出方案；经用户确认后生成相应程序，作为插件下发至手机宿主应用中运行。本系统按个人需求单独制作，不提供面向大众的统一应用。
 
-一句话：做你自己的手机 App。不为大众做一个同款，为每一个人现做不一样的程序。
-
-`data/` 是设计与契约基线，`code/` 是当前联调实现。本文把两边对到同一条产品线上。
+`data/` 为设计与契约基线，`code/` 为当前联调实现。二者对照阅读，即为完整说明。
 
 ---
 
@@ -14,9 +12,9 @@
 
 | 能力 | 说明 |
 |------|------|
-| 开口下单 | 对话页用文字或离线语音描述需求；手机不直连大模型 |
-| 可行性与确认 | 产品 Agent 澄清、对齐、给出打开后的效果；未确认不制作 |
-| 现做程序 | 确认后由程序 Agent 生成插件：默认内部 APK，也可走声明式 `.apkg` |
+| 诉求收集 | 对话页用文字或离线语音描述需求；手机不直连大模型 |
+| 可行性分析 | 产品 Agent 分析诉求并优化设计；未确认不进入开发 |
+| 在线制作 | 开发 Agent 判断设计能否实现并编写程序；测试 Agent 验证后方可下发 |
 | 程序广场 | 下载、校验、安装后出现在列表；用户点开再加载，不自动启动 |
 | 历史续作 | 继续、修改已有任务；在原源码上改，不因标题相似覆盖旧程序 |
 | 断云可用 | 已装的纯本地插件可离线打开；离线不能生成新程序 |
@@ -30,7 +28,7 @@
 
 ## 使用示例
 
-以「养花小助手」走完一遍：收集诉求、对齐诉求，程序下载到程序广场，再打开运行。
+以「养花小助手」为例：收集诉求、对齐诉求，程序下载到程序广场，再打开运行。
 
 | 收集与对齐诉求 | 下载到程序广场 | 运行程序 |
 |:---:|:---:|:---:|
@@ -57,10 +55,10 @@
 │  ConnectPhone :17890     DownloadServer :17891     │
 │           │                                        │
 │           ▼                                        │
-│  Orchestrator                                      │
-│    ├─ 产品 Agent：澄清 / 可行性 / 确认 / 归档      │
-│    ├─ 程序 Agent：Codex 写代码 → Gradle 编 APK     │
-│    └─ LLM / Codex CLI（只在电脑侧）                │
+│  统筹 Agent：判定用户消息应交予哪一方              │
+│    ├─ 产品 Agent：分析诉求，优化设计               │
+│    ├─ 开发 Agent：判断设计能否实现，并开发         │
+│    └─ 测试 Agent：测试方案是否按设计实现           │
 └────────────────────────────────────────────────────┘
 ```
 
@@ -68,10 +66,11 @@
 
 ```text
 UserRequest + Runtime 画像
-  → 澄清 / 可行性
-  → 方案（打开后的效果）
-  → 用户确认
-  → 制品（plugin.apk 或 .apkg）
+  → 统筹分发
+  → 产品：分析诉求，优化设计
+  → 开发：判断能否实现，并开发
+  → 测试：验证实现
+  → 制品下发
   → 端侧校验 → 安装 → 激活 → 用户点击运行
 ```
 
@@ -94,17 +93,13 @@ UserRequest + Runtime 画像
 ```text
 打开 App ──自动连电脑──► 对话页
         │
-        ├─ 文字 / 语音 ──chat──► 产品 Agent
-        │                         ├─ 再问清楚
-        │                         ├─ 做不了：边界 + 替代，不产包
-        │                         └─ 能做：方案 + 效果描述
+        ├─ 文字 / 语音 ──chat──► 统筹 Agent
+        │                         ├─ 产品：分析诉求，优化设计
+        │                         ├─ 开发：判断设计能否实现，并开发
+        │                         └─ 测试：验证方案实现
         │                                  │
-        │                     确认 / 按意见改 / 不满意重来 / 取消
-        │                                  │
-        │                         确认后才进入制作
+        │                         测试通过后才下发制品
         │                                  ▼
-        │                         程序 Agent 生成制品
-        │                                  │
         │                         job: making → downloading
         │                                  ▼
         └─ HTTP 17891 流式下载 ──校验──► installing → ready
@@ -128,71 +123,44 @@ UserRequest + Runtime 画像
 
 ## 2. PC 端 Agent 设计
 
-入口：`code/agent/main.py`。默认 `--runtime apk`；声明式兼容 `--runtime declarative`。
+电脑侧按四个独立 Agent 分工。用户消息先由统筹 Agent 判定应交予哪一方；各方只处理本职，不改写其他 Agent 的结论。大模型仅在电脑侧调用。
 
-日常启动：
+入口：`code/agent/main.py`。日常启动：`cd code/startServer && ./start-adb-server.sh`。
 
-```bash
-cd code/startServer
-./start-adb-server.sh
-```
-
-启动前检查 Codex 登录，再监听端口。Agent 运行期间守护 `adb reverse`，USB 重连后补回 17890 / 17891。
-
-### 2.1 进程内模块
+### 2.1 四个 Agent
 
 ```text
-ConnectPhone (17890 NDJSON)
-        │  chat / runtime_error / artifact_report
-        ▼
-Orchestrator ──────────────────────────► ApkDelivery
-        │                                      │
-        ├─ ProductAgent                        │ job 推给手机
-        │    意图、澄清、可行性、确认          │
-        │    产品归档 out/tasks/<id>/product/  │
-        │                                      │
-        └─ ProgramAgent                        ▼
-             Codex CLI 写 PluginMain     DownloadServer (17891)
-             Gradle assembleDebug              只读制品 HTTP
-             校验 / 注册下载
+手机消息
+    │
+    ▼
+统筹 Agent ──判定交互对象──┐
+    │                      │
+    ├─ 产品 Agent          │ 分析诉求，优化设计
+    ├─ 开发 Agent          │ 判断设计能否实现，并开发
+    └─ 测试 Agent          │ 测试方案是否按设计实现
+                           │
+                           ▼
+                    通过后注册制品并通知下载
 ```
 
-| 模块 | 路径 | 职责 |
+| Agent | 职责 | 不负责 |
 |------|------|------|
-| 手机桥 | `connect_phone/` | 只收发，不调模型 |
-| 编排 | `orchestrator.py` | 确认后才建任务；运行错误有界修复（同进程最多 2 次） |
-| 产品 Agent | `apk_product_manager/` | 理解需求、对齐方案、写归档；不写代码 |
-| 可行性 | `apk_product_manager/feasibility.py` | 需求 ∩ Runtime 画像 ∩ 发布策略；模型初判须复核 |
-| 程序 Agent | `program_agent/` | 按归档生成 / 续作 / 修复插件工程并编译 |
-| 下发 | `apk_delivery.py` + `download_server.py` | 注册制品、推 `job`、重连重放 |
-| LLM | `llm/` | OpenAI 兼容口或本机；密钥走环境，不进仓库 |
+| 统筹 Agent | 判断用户消息应与哪个 Agent 交互，维护当前阶段 | 分析诉求、编写程序、判定测试是否通过 |
+| 产品 Agent | 分析用户诉求，优化设计，形成可确认的方案 | 判断实现细节、编写程序 |
+| 开发 Agent | 分析产品设计能否实现；能则开发并编译 | 自行改写产品诉求 |
+| 测试 Agent | 依据产品设计与验收条件验证实现；通过后方可下发 | 修改需求或产品方案 |
 
-声明式模式走另一套：`product_manager` + `MainAgent`，产物是 `.apkg`，状态文件与 APK 通道分开，避免把 APK 当声明式包装。
+产品设计归档于 `code/agent/out/tasks/<taskId>/product/`。开发与测试在任务目录内进行；失败时由统筹 Agent 交回对应一方处理，不整包重写，也不用无关程序顶替。
 
-### 2.2 产品 Agent
+### 2.2 与现有代码的对应
 
-面向用户的回复只讲体验，不讲宿主、插件、Gradle。输出结构化状态：
-
-- `NEED_CLARIFY`：最多把目标问清
-- `WAITING_APPROVAL`：给出打开后的效果，等确认
-- `UNSUPPORTED`：初判越界，交编程侧对齐后再复核，不直接当终局
-
-路由：`new` / `continue` / `modify` / `clarify`。续作、修改必须对准历史目录里的真实 `taskId`，不能用标题猜 ID。
-
-归档落在 `code/agent/out/tasks/<taskId>/product/`：`design.md`、`implementation.md`、`runtime.md`、`intent.json`、对齐日志。确认快照不可变。
-
-### 2.3 程序 Agent
-
-确认之后才开工：
-
-1. 复制 `plugin_template/`
-2. Codex CLI（`codex exec`）只写 `{package}.PluginMain`，实现 `PluginEntry`
-3. 用 phone_agent 的 Gradle 编 `plugin.apk`
-4. 注册到 17891，通知手机下载
-
-监督：CLI 心跳、失败分类（瞬时重试 / 设计不全 / 问用户）、写代码与编译失败各最多 3 次。认证、配额、进程错误转人工，禁止空转。工作目录在任务内 `dev/codex_work`；失败草稿进 `dev/source-draft`，覆盖前备份。
-
-手机回传 `runtime_error` 时，在**当前任务源码**上改，不整包重写，也不用计数器顶替做不出来的游戏。
+| Agent | 现有落点 |
+|------|------|
+| 统筹 Agent | `orchestrator.py` |
+| 产品 Agent | `apk_product_manager/` |
+| 开发 Agent | `program_agent/` |
+| 测试 Agent | 独立角色，由统筹在开发完成后调度 |
+| 手机桥 / 下发 | `connect_phone/`、`apk_delivery.py`、`download_server.py` |
 
 ---
 
